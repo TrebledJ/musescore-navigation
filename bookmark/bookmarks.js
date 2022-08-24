@@ -143,11 +143,15 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
     var e = cursor.element;
     if (e) {
         if (!includes(this.allowedElements, e.type)) {
-            this.onError("selection isn't note or rest (1)");
+            this.onError("selection isn't note or rest");
             return null;
         }
+        console.log("found cursor from range selection");
         return cursor;
     }
+
+    console.log("could not find cursor...");
+    console.log("falling back to analysing curScore.selection...");
 
     // 3.
     var es = curScore.selection.elements;
@@ -158,7 +162,7 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
 
     console.log("element: %1 / %2".arg(e.type).arg(e.name));
     if (!includes(this.allowedElements, e.type)) {
-        this.onError("selection isn't note or rest (2)");
+        this.onError("selection isn't note or rest");
         return null;
     }
 
