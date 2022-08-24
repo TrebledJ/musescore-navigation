@@ -94,44 +94,73 @@ BookmarkCursor.prototype.currentBookmark = function () {
  * @brief   Selects the element attached by the previous bookmark.
  */
 BookmarkCursor.prototype.selectPrevBookmark = function () {
-    this.iterateAndSelectBookmark(function (cursor) { cursor.prev(); });
+    this.selectBookmark(Direction.BACKWARD);
 }
 
 /**
  * @brief   Selects the element attached by the next bookmark.
  */
 BookmarkCursor.prototype.selectNextBookmark = function () {
-    this.iterateAndSelectBookmark(function (cursor) { cursor.next(); });
+    this.selectBookmark(Direction.FORWARD);
 }
 
-BookmarkCursor.prototype.iterateAndSelectBookmark = function (iterate) {
-    var cursor = this.getCursorAtSelection();
+/**
+ * @brief   Helper to select bookmarks.
+ */
+BookmarkCursor.prototype.selectBookmark = function (dir) {
     var this_ = this;
-    this.iterateBookmarks(iterate, cursor,
+    var cursor = this.getCursorAtSelection();
+    if (cursor) {
+        // Skip one element, in case current segment has a bookmark.
+        (dir === Direction.FORWARD ? cursor.next() : cursor.prev());
+    }
+    this.foreachBookmark(
+        dir,
+        cursor,
         function (bkmk) {
             var e = this_.getSelectableUnderElement(bkmk);
             curScore.selection.select(e);
             return true;
         },
-        function () {
-            this_.onInfo(qsTr("No more bookmarks to select."));
-        });
+        function () { this_.onInfo(qsTr("No more bookmarks to select.")); }
+    );
 }
 
-BookmarkCursor.prototype.iterateBookmarks = function (iterate, cursor, onBookmark, onDone) {
-    this.cursor = cursor;
+/**
+ * @brief   Iterates through the score and calls a callback for each bookmark element found.
+ * 
+ * @param   direction       The search direction. Direction.FORWARD or Direction.BACKWARD
+ * @param   cursor          The initial cursor. If null is provided, a default is used.
+ * @param   bkmkCallback    A callback called when a bookmark element is found.
+ *                          This callback is passed an MS element (the bookmark) and can
+ *                          return true/false depending if the search loop should stop.
+ * @param   doneCallback    A callback called after the search loop is exited.
+ */
+BookmarkCursor.prototype.foreachBookmark = function (direction, cursor, bkmkCallback, doneCallback) {
+    if (direction !== Direction.FORWARD && direction !== Direction.BACKWARD) {
+        this.onError("unknown iteration direction: %1".arg(direction));
+        return;
+    }
 
-    iterate(this.cursor);
+    this.cursor = cursor;
+    if (!this.cursor) {
+        // Fallback to a default cursor.
+        this.cursor = curScore.newCursor();
+        this.cursor.rewind(Cursor.SCORE_START);
+        // TODO: if direction == BACKWARD, start from end of score
+    }
+
+    // Searching for bookmarks.
     while (this.cursor.segment) {
         var bkmk = this.currentBookmark();
         if (bkmk) {
-            var finish = onBookmark(bkmk);
+            var finish = bkmkCallback(bkmk);
             if (finish)
                 return;
         }
-        iterate(this.cursor);
+        (direction === Direction.FORWARD ? this.cursor.next() : this.cursor.prev());
     }
-    onDone();
+    doneCallback();
 }
 
 /**
@@ -168,7 +197,9 @@ BookmarkCursor.prototype.clearAllBookmarks = function () {
     cursor.rewind(Cursor.SCORE_START);
 
     var this_ = this;
-    this.iterateBookmarks(function (cursor) { cursor.next(); }, cursor,
+    this.foreachBookmark(
+        Direction.FORWARD,
+        cursor,
         function (bkmk) { removeElement(bkmk); },
         function () { this_.onInfo(qsTr("All bookmarks cleared!")); }
     );
