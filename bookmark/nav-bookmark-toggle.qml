@@ -15,20 +15,29 @@ MuseScore {
             Qt.quit();
         }
 
-        var bk = new B.BookmarkCursor(onError);
+        var bk = new B.BookmarkCursor(onInfo, onError);
         bk.toggleBookmark();
         Qt.quit();
     }
 
+    function onInfo(msg)
+    {
+        dialog.text = msg;
+        dialog.title = qsTr("Info");
+        dialog.icon = StandardIcon.Information;
+        dialog.open();
+    }
+
     function onError(msg)
     {
-        errorDialog.text = qsTr("An error occurred: %1".arg(msg));
-        errorDialog.open();
+        dialog.text = qsTr("Error") + ": " + msg;
+        dialog.title = qsTr("Error");
+        dialog.icon = StandardIcon.Warning;
+        dialog.open();
     }
 
     MessageDialog {
-        id: errorDialog
-        title: qsTr("Error")
+        id: dialog
         onAccepted: Qt.quit()
     }
 }

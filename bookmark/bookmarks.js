@@ -1,10 +1,27 @@
 
 
-function BookmarkCursor(onError) {
-    this.onError = onError || console.error;
+// Wrapping options for select-prev / select-next.
+var WrapSelect = {
+    NONE: 0,    // No wrapping.
+    SCORE: 1,   // Wrap around current score.   // TODO
+    ALL: 2,     // Wrap around all open scores. // TODO
+};
+
+var Direction = {
+    FORWARD: 0,
+    BACKWARD: 1,
+};
+
+function BookmarkCursor(onInfo, onError) {
+    // Settings.
+    this.wrap = WrapSelect.NONE;
     this.bookmarkText = "bkmk";
     this.bookmarkFontSize = 0.5;
     this.allowedElements = [Element.CHORD, Element.REST, Element.NOTE];
+
+    // Private.
+    this.onInfo = onInfo || console.log;
+    this.onError = onError || console.error;
     this.cursor = null;
 }
 
@@ -88,24 +105,37 @@ BookmarkCursor.prototype.selectNextBookmark = function () {
 }
 
 BookmarkCursor.prototype.iterateAndSelectBookmark = function (iterate) {
-    this.cursor = this.getCursorAtSelection();
+    var cursor = this.getCursorAtSelection();
+    var this_ = this;
+    this.iterateBookmarks(iterate, cursor,
+        function (bkmk) {
+            var e = this_.getSelectableUnderElement(bkmk);
+            curScore.selection.select(e);
+            return true;
+        },
+        function () {
+            this_.onInfo(qsTr("No more bookmarks to select."));
+        });
+}
+
+BookmarkCursor.prototype.iterateBookmarks = function (iterate, cursor, onBookmark, onDone) {
+    this.cursor = cursor;
 
     iterate(this.cursor);
     while (this.cursor.segment) {
         var bkmk = this.currentBookmark();
         if (bkmk) {
-            var e = this.getSelectableUnderElement(bkmk);
-            curScore.selection.select(e);
-            return;
+            var finish = onBookmark(bkmk);
+            if (finish)
+                return;
         }
         iterate(this.cursor);
-
     }
-    this.onError("could not find bookmark");
+    onDone();
 }
 
 /**
- * @brief   Get a selectable element under (or over) the given bookmark element.
+ * @brief   Get a selectable element under (or over) the given element.
  * @return  An MS element or null.
  */
 BookmarkCursor.prototype.getSelectableUnderElement = function (element) {
@@ -128,6 +158,20 @@ BookmarkCursor.prototype.getSelectableUnderElement = function (element) {
         return null;
     }
     return selectable;
+}
+
+/**
+ * @brief   Clear all bookmark elements.
+ */
+BookmarkCursor.prototype.clearAllBookmarks = function () {
+    var cursor = curScore.newCursor();
+    cursor.rewind(Cursor.SCORE_START);
+
+    var this_ = this;
+    this.iterateBookmarks(function (cursor) { cursor.next(); }, cursor,
+        function (bkmk) { removeElement(bkmk); },
+        function () { this_.onInfo(qsTr("All bookmarks cleared!")); }
+    );
 }
 
 /**
