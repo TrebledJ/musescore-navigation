@@ -95,20 +95,20 @@ BookmarkCursor.prototype.currentBookmark = function () {
  * @brief   Selects the element attached by the previous bookmark.
  */
 BookmarkCursor.prototype.selectPrevBookmark = function () {
-    this.selectBookmark(Direction.BACKWARD);
+    this.selectPrevOrNextBookmark(Direction.BACKWARD);
 }
 
 /**
  * @brief   Selects the element attached by the next bookmark.
  */
 BookmarkCursor.prototype.selectNextBookmark = function () {
-    this.selectBookmark(Direction.FORWARD);
+    this.selectPrevOrNextBookmark(Direction.FORWARD);
 }
 
 /**
  * @brief   Helper to select bookmarks.
  */
-BookmarkCursor.prototype.selectBookmark = function (dir) {
+BookmarkCursor.prototype.selectPrevOrNextBookmark = function (dir) {
     var this_ = this;
     var cursor = this.getCursorAtSelection(true);
     if (cursor) {
