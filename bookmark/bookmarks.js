@@ -215,7 +215,8 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
     // 3.a. If no element selected, check curScore.selection. This means an individual note/rest is selected.
     // 3.b. Get the element from curScore.selection.
     // 4. Get the segment from the element.
-    // 5. Advance cursor to the above segment.
+    // 5. Advance cursor to said segment.
+    // 6. Set correct staffIdx as selected element.
 
     var cursor = curScore.newCursor();
 
@@ -265,13 +266,24 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
     cursor.rewind(Cursor.SCORE_START);
     while (cursor.segment) {
         if (cursor.segment.is(seg)) {
-            console.log("found matching segment!");
-            return cursor;
+            console.log("found matching segment");
+            break;
         }
         cursor.next();
     }
-    this.onError("could not find matching segment for element from curScore.selection (%1)".arg(e));
-    return null;
+
+    if (!cursor.segment) {
+        this.onError("could not find matching segment for element from curScore.selection (%1)".arg(e));
+        return null;
+    }
+
+    // 6.
+    var staves = getStaves(seg);
+    var staffIdx = indexOfStaff(staves, e);
+    cursor.staffIdx = staffIdx;
+    console.log("staffIdx: %1 / num: %2".arg(staffIdx).arg(staves.length));
+
+    return cursor;
 }
 
 // ---------------------------------------------------------------
