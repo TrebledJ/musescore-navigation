@@ -9,14 +9,20 @@ function BookmarkCursor(onError) {
 }
 
 /**
+ * @brief   Creates a bookmark element.
+ */
+BookmarkCursor.prototype.createBookmark = function () {
+    var text = newElement(Element.STAFF_TEXT);
+    text.text = this.bookmarkText;
+    text.visible = false;
+    text.fontSize *= this.bookmarkFontSize;
+    return text;
+}
+
+/**
  * @brief   Toggles the bookmark at the current location.
  */
 BookmarkCursor.prototype.toggleBookmark = function () {
-    // if (!this.isElementSelected()) {
-    //     this.onError("element not selected");
-    //     return;
-    // }
-
     this.cursor = this.getCursorAtSelection();
     if (!this.cursor) {
         this.onError("toggleBookmark: expected cursor");
@@ -35,14 +41,10 @@ BookmarkCursor.prototype.toggleBookmark = function () {
 
 /**
  * @brief   Adds a bookmark in the current location.
- * // TODO: what if no bookmark?
  */
 BookmarkCursor.prototype.addBookmark = function (seg) {
-    var text = newElement(Element.STAFF_TEXT);
-    text.text = this.bookmarkText;
-    text.visible = false;
-    text.fontSize *= this.bookmarkFontSize;
-    this.cursor.add(text);
+    var bkmk = this.createBookmark();
+    this.cursor.add(bkmk);
 }
 
 /**
@@ -50,80 +52,86 @@ BookmarkCursor.prototype.addBookmark = function (seg) {
  * @return  True if a bookmark was removed, false otherwise.
  */
 BookmarkCursor.prototype.removeBookmark = function (seg) {
-    var as = this.cursor.segment.annotations;
-    for (var i = 0; i < as.length; i++) {
-        if (as[i].text === this.bookmarkText) {
-            removeElement(as[i]);
-            return true;
-        }
+    var bkmk = this.currentBookmark();
+    if (bkmk) {
+        removeElement(bkmk);
+        return true;
     }
     return false;
 }
 
 /**
- * @brief   Checks whether the cursor is currently residing at a bookmark.
- * @return  true or false.
+ * @brief   Gets the current bookmark at the current cursor's segment.
+ * @return  An MS Element or null.
  */
-// BookmarkCursor.prototype.isAtBookmark = function () {
-//     var as = seg.annotations;
-//     for (var i = 0; i < as.length; i++) {
-//         console.log("isAtBookmark: checking annotation: %1".arg(as[i].text));
-//         if (as[i].text === this.bookmarkText)
-//             return true;
-//     }
-//     return false;
-// }
-
-/**
- * @brief   Rewinds the cursor to the previous bookmark.
- */
-BookmarkCursor.prototype.goToPrevBookmark = function () {
-
+BookmarkCursor.prototype.currentBookmark = function () {
+    var as = this.cursor.segment.annotations;
+    for (var i = 0; i < as.length; i++) {
+        if (as[i].text === this.bookmarkText)
+            return as[i];
+    }
+    return null;
 }
 
 /**
- * @brief   Advances the cursor to the next bookmark.
+ * @brief   Selects the element attached by the previous bookmark.
  */
-BookmarkCursor.prototype.goToNextBookmark = function () {
-
-}
-
-
-/**
- * @brief   Gets the element where the previous bookmark marker is.
- * @return  An MS element. If none exists, returns null.
- */
-BookmarkCursor.prototype.prevBookmarkElement = function () {
-
+BookmarkCursor.prototype.selectPrevBookmark = function () {
+    this.iterateAndSelectBookmark(function (cursor) { cursor.prev(); });
 }
 
 /**
- * @brief   Gets the element where the next bookmark marker is.
- * @return  An MS element. If none exists, returns null.
+ * @brief   Selects the element attached by the next bookmark.
  */
-BookmarkCursor.prototype.nextBookmarkElement = function () {
-
+BookmarkCursor.prototype.selectNextBookmark = function () {
+    this.iterateAndSelectBookmark(function (cursor) { cursor.next(); });
 }
 
+BookmarkCursor.prototype.iterateAndSelectBookmark = function (iterate) {
+    this.cursor = this.getCursorAtSelection();
 
-/**
- * @brief   Checks whether an element is selected.
- * @return  true or false.
- */
-BookmarkCursor.prototype.isElementSelected = function () {
+    iterate(this.cursor);
+    while (this.cursor.segment) {
+        var bkmk = this.currentBookmark();
+        if (bkmk) {
+            var e = this.getSelectableUnderElement(bkmk);
+            curScore.selection.select(e);
+            return;
+        }
+        iterate(this.cursor);
 
+    }
+    this.onError("could not find bookmark");
 }
 
 /**
- * @brief   Get the segment of the selected element.
- * @return  An MS element if found, null otherwise.
+ * @brief   Get a selectable element under (or over) the given bookmark element.
+ * @return  An MS element or null.
  */
-// BookmarkCursor.prototype.getSegment = function () {
+BookmarkCursor.prototype.getSelectableUnderElement = function (element) {
+    // Get the chord/note/rest under the bookmark.
+    var staves = getStaves(this.cursor.segment);
+    var staffIdx = indexOfStaff(staves, element);
+    var selectable = this.cursor.segment.elementAt(4 * staffIdx);
 
-// }
+    if (selectable && selectable.type == Element.CHORD) {
+        // Can't select chords, so we'll select the first note.
+        if (selectable.notes.length == 0) {
+            this.onError("chord with bookmark does not have note?");
+            return null;
+        }
+        selectable = selectable.notes[0];
+    }
+
+    if (!selectable) {
+        this.onError("staff element to select not found")
+        return null;
+    }
+    return selectable;
+}
 
 /**
- * @brief   Get a MS cursor at the given segment.
+ * @brief   Get a MS cursor at the selected note or elements.
  * @return  An MS cursor or null.
  */
 BookmarkCursor.prototype.getCursorAtSelection = function () {
@@ -205,4 +213,23 @@ function includes(array, element) {
             return true;
     }
     return false;
+}
+
+function getStaves(seg) {
+    var staves = [];
+    for (var i = 0; ; i++) {
+        var e = seg.elementAt(4 * i);
+        if (!e)
+            break;
+        staves.push(e.staff);
+    }
+    return staves;
+}
+
+function indexOfStaff(staves, e) {
+    for (var i = 0; i < staves.length; i++) {
+        if (staves[i].is(e.staff))
+            return i;
+    }
+    return -1;
 }
