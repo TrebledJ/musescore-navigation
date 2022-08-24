@@ -13,6 +13,8 @@ function getCursorAtSelection(allowedElements, onError) {
     // 5. Advance cursor to said segment.
     // 6. Set correct staffIdx as selected element.
 
+    onError = onError || function(_, _, _, _, _) {};
+
     var cursor = curScore.newCursor();
 
     // 1.

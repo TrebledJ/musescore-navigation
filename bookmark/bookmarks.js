@@ -1,4 +1,5 @@
 .import "../utils.js" as Utils
+.import MuseScore 3.0 as MS
 
 // Wrapping options for select-prev / select-next.
 var WrapSelect = {
@@ -18,7 +19,6 @@ function BookmarkCursor(onInfo, onError) {
     this.bookmarkText = "bkmk";
     this.bookmarkFontSize = 0.5;
     this.allowedElements = [Element.CHORD, Element.REST, Element.NOTE];
-    // this.Utils = Utils;
 
     // Private.
     this.onInfo = onInfo || console.log;
@@ -110,7 +110,7 @@ BookmarkCursor.prototype.selectNextBookmark = function () {
  */
 BookmarkCursor.prototype.selectBookmark = function (dir) {
     var this_ = this;
-    var cursor = this.getCursorAtSelection();
+    var cursor = this.getCursorAtSelection(true);
     if (cursor) {
         // Skip one element, in case current segment has a bookmark.
         (dir === Direction.FORWARD ? cursor.next() : cursor.prev());
@@ -147,7 +147,7 @@ BookmarkCursor.prototype.foreachBookmark = function (direction, cursor, bkmkCall
     if (!this.cursor) {
         // Fallback to a default cursor.
         this.cursor = curScore.newCursor();
-        this.cursor.rewind(Cursor.SCORE_START);
+        this.cursor.rewind(MS.Cursor.SCORE_START);
         // TODO: if direction == BACKWARD, start from end of score
     }
 
@@ -194,7 +194,7 @@ BookmarkCursor.prototype.getSelectableUnderElement = function (element) {
  */
 BookmarkCursor.prototype.clearAllBookmarks = function () {
     var cursor = curScore.newCursor();
-    cursor.rewind(Cursor.SCORE_START);
+    cursor.rewind(MS.Cursor.SCORE_START);
 
     var this_ = this;
     this.foreachBookmark(
@@ -209,6 +209,6 @@ BookmarkCursor.prototype.clearAllBookmarks = function () {
  * @brief   Get a MS cursor at the selected note or elements.
  * @return  An MS cursor or null.
  */
-BookmarkCursor.prototype.getCursorAtSelection = function () {
-    return Utils.getCursorAtSelection(this.allowedElements, this.onError);
+BookmarkCursor.prototype.getCursorAtSelection = function (suppressError) {
+    return Utils.getCursorAtSelection(this.allowedElements, suppressError ? null : this.onError);
 }
