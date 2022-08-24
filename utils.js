@@ -4,7 +4,7 @@
  * @brief   Get a MS cursor at the selected note or elements.
  * @return  An MS cursor or null.
  */
-function getCursorAtSelection(allowedElements, onError) {
+function getCursorAtSelection(allowedElements, onError, segmentFilter) {
     // 1. Cursor rewind to selection start and get the first selected element.
     // 2. If the element is valid, then we're done; we've our cursor.
     // 3.a. If no element selected, check curScore.selection. This means an individual note/rest is selected.
@@ -13,12 +13,17 @@ function getCursorAtSelection(allowedElements, onError) {
     // 5. Advance cursor to said segment.
     // 6. Set correct staffIdx as selected element.
 
-    onError = onError || function(_, _, _, _, _) {};
+    onError = onError || function(_, _, _, _, _) {}; // Silence errors by default.
 
     var cursor = curScore.newCursor();
 
     // 1.
     cursor.rewind(MS.Cursor.SELECTION_START);
+
+    if (segmentFilter)
+        cursor.filter = segmentFilter;
+
+    console.log("curScore.selection: %1 elements".arg(curScore.selection.elements.length));
 
     if (!cursor.segment && !cursor.element && curScore.selection.elements.length === 0) {
         onError(qsTr("Please select a note or rest, and try again."));
@@ -28,7 +33,7 @@ function getCursorAtSelection(allowedElements, onError) {
     // 2.
     var e = cursor.element;
     if (e) {
-        if (!includes(allowedElements, e.type)) {
+        if (allowedElements && !includes(allowedElements, e.type)) {
             onError(qsTr("Selection isn't note or rest."));
             return null;
         }
@@ -47,7 +52,7 @@ function getCursorAtSelection(allowedElements, onError) {
     e = es[0];
 
     console.log("element: %1 / %2".arg(e.type).arg(e.name));
-    if (!includes(allowedElements, e.type)) {
+    if (allowedElements && !includes(allowedElements, e.type)) {
         onError(qsTr("Selection isn't note or rest."));
         return null;
     }
@@ -81,6 +86,21 @@ function getCursorAtSelection(allowedElements, onError) {
     console.log("staffIdx: %1 / num: %2".arg(staffIdx).arg(staves.length));
 
     return cursor;
+}
+
+/**
+ * @brief   Get the measure number the given cursor is at.
+ * @return  The measure number, where the first measure is 1 (not 0).
+ */
+function getCursorMeasureNumber(cursor) {
+    var cursor2 = curScore.newCursor();
+    cursor2.rewind(MS.Cursor.SCORE_START);
+    var mNumber = 1;
+    while (!cursor2.measure.is(cursor.measure)) {
+        mNumber++;
+        cursor2.nextMeasure();
+    }
+    return mNumber;
 }
 
 function getParentSegment(e) {
