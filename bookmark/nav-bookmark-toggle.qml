@@ -7,7 +7,7 @@ import "bookmarks.js" as B
 MuseScore {
     id: plugin
     description: "Action to toggle a bookmark at the current selection."
-    version: "3.0.0"
+    version: "3.5.0"
     menuPath: "Plugins.Bookmarks.Toggle at Selection"
 
     onRun: {
