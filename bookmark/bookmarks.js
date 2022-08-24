@@ -222,6 +222,11 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
     // 1.
     cursor.rewind(Cursor.SELECTION_START);
 
+    if (!cursor.segment && !cursor.element && curScore.selection.elements.length === 0) {
+        this.onError(qsTr("Please select a note or rest, and try again."));
+        return null;
+    }
+
     // 2.
     var e = cursor.element;
     if (e) {
