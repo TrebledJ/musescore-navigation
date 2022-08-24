@@ -210,6 +210,16 @@ BookmarkCursor.prototype.clearAllBookmarks = function () {
  * @return  An MS cursor or null.
  */
 BookmarkCursor.prototype.getCursorAtSelection = function () {
+    return getCursorAtSelection(this.allowedElements, this.onError);
+}
+
+// ---------------------------------------------------------------
+
+/**
+ * @brief   Get a MS cursor at the selected note or elements.
+ * @return  An MS cursor or null.
+ */
+ function getCursorAtSelection(allowedElements, onError) {
     // 1. Cursor rewind to selection start and get the first selected element.
     // 2. If the element is valid, then we're done; we've our cursor.
     // 3.a. If no element selected, check curScore.selection. This means an individual note/rest is selected.
@@ -224,15 +234,15 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
     cursor.rewind(Cursor.SELECTION_START);
 
     if (!cursor.segment && !cursor.element && curScore.selection.elements.length === 0) {
-        this.onError(qsTr("Please select a note or rest, and try again."));
+        onError(qsTr("Please select a note or rest, and try again."));
         return null;
     }
 
     // 2.
     var e = cursor.element;
     if (e) {
-        if (!includes(this.allowedElements, e.type)) {
-            this.onError(qsTr("Selection isn't note or rest."));
+        if (!includes(allowedElements, e.type)) {
+            onError(qsTr("Selection isn't note or rest."));
             return null;
         }
         console.log("found cursor from range selection");
@@ -250,15 +260,15 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
     e = es[0];
 
     console.log("element: %1 / %2".arg(e.type).arg(e.name));
-    if (!includes(this.allowedElements, e.type)) {
-        this.onError(qsTr("Selection isn't note or rest."));
+    if (!includes(allowedElements, e.type)) {
+        onError(qsTr("Selection isn't note or rest."));
         return null;
     }
 
     // 4.
     var seg = getParentSegment(e);
     if (!seg) {
-        this.onError("could not get parent segment of %1".arg(e));
+        onError("could not get parent segment of %1".arg(e));
         return null;
     }
 
@@ -273,7 +283,7 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
     }
 
     if (!cursor.segment) {
-        this.onError("could not find matching segment for element from curScore.selection (%1)".arg(e));
+        onError("could not find matching segment for element from curScore.selection (%1)".arg(e));
         return null;
     }
 
@@ -285,8 +295,6 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
 
     return cursor;
 }
-
-// ---------------------------------------------------------------
 
 function getParentSegment(e) {
     // Try walking up parent hierarchy within a limit and finding a segment parent.
