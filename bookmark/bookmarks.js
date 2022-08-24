@@ -1,4 +1,4 @@
-.import "../utils.js" as Utils
+.import "../nav-utils.js" as Utils
 .import MuseScore 3.0 as MS
 
 // Wrapping options for select-prev / select-next.
