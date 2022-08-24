@@ -206,24 +206,3 @@ function includes(array, element) {
     }
     return false;
 }
-
-// ---------------------------------------------------------------
-
-function B() {
-    console.log("B");
-}
-
-
-function A() {
-    console.log("A");
-
-    this.boo = function () {
-        console.log("A.boo");
-    }
-
-    this.haha = 1;
-}
-
-A.prototype.blah = function () {
-    console.log("A.blah");
-}
