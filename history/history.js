@@ -12,6 +12,9 @@ function History(onLoad, onSave, onInfo, onError) {
     this.segmentFilter = Segment.All;
 
     // Private.
+    // We'll keep the history in two stacks: a back-stack and a forward-stack.
+    // When going back, a record is transferred from the back stack to the forward stack.
+    // Similarly when going forward, the record is transferred the other way.
     this.records_bk = [];
     this.records_fw = [];
     this.prevRecord = null;
@@ -103,28 +106,37 @@ History.prototype.clear = function() {
     this.save();
 }
 
+/**
+ * @brief   Select the last back record and move it to the forward-stack.
+ */
 History.prototype.goBack = function () {
-    if (this.records_bk.length === 0) {
-        this.onError("No data to go back to.");
+    this.goImpl(this.records_bk, this.records_fw);
+}
+
+/**
+ * @brief   Select the next forward record and move it to the back-stack.
+ */
+History.prototype.goForward = function () {
+    this.goImpl(this.records_fw, this.records_bk);
+}
+
+/**
+ * @brief   Select the topmost element on a stack. Then pop it and push it to its mirror stack.
+ */
+History.prototype.goImpl = function (stack, mirror) {
+    if (stack.length === 0) {
+        this.onError("No data to go to.");
         return;
     }
-    console.log("goBack");
-    var rec = this.records_bk[this.records_bk.length - 1];
+
+    var rec = stack[stack.length - 1];
     var cursor = getCursorAtRecord(rec);
 
     var selectable = Utils.getSelectableAtStaff(cursor, rec.staffIdx);
     curScore.selection.select(selectable);
 
-    this.records_fw.push(this.records_bk.pop());
+    mirror.push(stack.pop());
     this.ignore_next_select = true;
-}
-
-History.prototype.goForward = function () {
-    if (this.records_fw.length === 0) {
-        this.onError("No data to go forward to.");
-        return;
-    }
-    console.log("goForward");
 }
 
 /**
