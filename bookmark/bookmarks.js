@@ -119,7 +119,8 @@ BookmarkCursor.prototype.selectPrevOrNextBookmark = function (dir) {
         dir,
         cursor,
         function (bkmk) {
-            var e = this_.getSelectableUnderElement(bkmk);
+            var staffIdx = Utils.getStaffIdx(this_.cursor.segment, bkmk);
+            var e = Utils.getSelectableAtStaff(this_.cursor, staffIdx);
             curScore.selection.select(e);
             return true;
         },
@@ -162,31 +163,6 @@ BookmarkCursor.prototype.foreachBookmark = function (direction, cursor, bkmkCall
         (direction === Direction.FORWARD ? this.cursor.next() : this.cursor.prev());
     }
     doneCallback();
-}
-
-/**
- * @brief   Get a selectable element under (or over) the given element.
- * @return  An MS element or null.
- */
-BookmarkCursor.prototype.getSelectableUnderElement = function (element) {
-    // Get the chord/note/rest under the bookmark.
-    var staffIdx = Utils.getStaffIdx(this.cursor.segment, element);
-    var selectable = this.cursor.segment.elementAt(4 * staffIdx);
-
-    if (selectable && selectable.type == Element.CHORD) {
-        // Can't select chords, so we'll select the first note.
-        if (selectable.notes.length == 0) {
-            this.onError("chord with bookmark does not have note?");
-            return null;
-        }
-        selectable = selectable.notes[0];
-    }
-
-    if (!selectable) {
-        this.onError("staff element to select not found")
-        return null;
-    }
-    return selectable;
 }
 
 /**

@@ -112,21 +112,7 @@ History.prototype.goBack = function () {
     var rec = this.records_bk[this.records_bk.length - 1];
     var cursor = getCursorAtRecord(rec);
 
-    var selectable = cursor.segment.elementAt(4 * rec.staffIdx);
-
-    if (selectable && selectable.type == Element.CHORD) {
-        // Can't select chords, so we'll select the first note.
-        if (selectable.notes.length == 0) {
-            this.onError("chord with bookmark does not have note?");
-            return;
-        }
-        selectable = selectable.notes[0];
-    }
-
-    if (!selectable) {
-        this.onError("staff element to select not found")
-        return;
-    }
+    var selectable = Utils.getSelectableAtStaff(cursor, rec.staffIdx);
     curScore.selection.select(selectable);
 
     this.records_fw.push(this.records_bk.pop());
