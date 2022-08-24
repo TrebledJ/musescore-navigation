@@ -88,6 +88,7 @@ MuseScore {
                 Layout.fillWidth: true
                 text: qsTr("<-")
                 onClicked: {
+                    history.logPosition(); // Save before going back.
                     history.goBack();
                     cmd("note-input");
                     cmd("note-input");
