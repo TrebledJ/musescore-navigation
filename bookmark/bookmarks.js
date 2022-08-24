@@ -231,7 +231,7 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
     var e = cursor.element;
     if (e) {
         if (!includes(this.allowedElements, e.type)) {
-            this.onError("selection isn't note or rest");
+            this.onError(qsTr("Selection isn't note or rest."));
             return null;
         }
         console.log("found cursor from range selection");
@@ -250,7 +250,7 @@ BookmarkCursor.prototype.getCursorAtSelection = function () {
 
     console.log("element: %1 / %2".arg(e.type).arg(e.name));
     if (!includes(this.allowedElements, e.type)) {
-        this.onError("selection isn't note or rest");
+        this.onError(qsTr("Selection isn't note or rest."));
         return null;
     }
 
