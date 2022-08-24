@@ -9,7 +9,7 @@ import "history.js" as H
 MuseScore {
     id: plugin
     description: "Keeps track of your cursor so that you can jump back to where you were before."
-    version: "3.5.0"
+    version: "3.0.0"
     menuPath: "Plugins.History.History UI"
 
     pluginType: "dock"

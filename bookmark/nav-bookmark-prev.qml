@@ -7,7 +7,7 @@ import "bookmarks.js" as B
 MuseScore {
     id: plugin
     description: "Action to select the previous bookmark."
-    version: "3.5.0"
+    version: "3.0.0"
     menuPath: "Plugins.Bookmarks.Select Previous Bookmark"
 
     onRun: {

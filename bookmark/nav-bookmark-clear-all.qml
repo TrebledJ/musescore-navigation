@@ -7,7 +7,7 @@ import "bookmarks.js" as B
 MuseScore {
     id: plugin
     description: "Action to clear all bookmarks."
-    version: "3.5.0"
+    version: "3.0.0"
     menuPath: "Plugins.Bookmarks.Clear All"
 
     onRun: {

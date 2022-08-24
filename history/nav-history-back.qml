@@ -7,7 +7,7 @@ import "history.js" as H
 MuseScore {
     id: plugin
     description: "Action to navigate back to your previous selection."
-    version: "3.5.0"
+    version: "3.0.0"
     menuPath: "Plugins.History.Go Back"
 
     onRun: {
