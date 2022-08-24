@@ -86,7 +86,7 @@ MuseScore {
 
             Button {
                 Layout.fillWidth: true
-                text: qsTr("<-")
+                text: qsTr("<-") // TODO: replace with icons? or at least something that looks better...
                 onClicked: {
                     history.logPosition(); // Save before going back.
                     history.goBack();
