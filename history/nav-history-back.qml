@@ -19,6 +19,8 @@ MuseScore {
         // Don't save. Read only.
         var history = new H.History(load, function () {}, onInfo, onError, 'go-back');
         history.goBack();
+        cmd("note-input");
+        cmd("note-input");
         // Qt.quit(); // Uncommenting this will cause other plugins to quit as well. :(
     }
 
@@ -52,5 +54,6 @@ MuseScore {
         category: "plugin.nav.history"
         property string records_bk: "[]"
         property string records_fw: "[]"
+        property string currRecord: "{}"
     }
 }

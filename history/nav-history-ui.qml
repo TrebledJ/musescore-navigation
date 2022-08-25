@@ -40,7 +40,6 @@ MuseScore {
             // TODO: keep history between scores.
             prevScore = curScore;
         } else if (state.selectionChanged) {
-            console.log("selection changed");
             history.logPosition(true);
         }
     }
@@ -63,11 +62,13 @@ MuseScore {
 
     function load(key)
     {
+        // console.log("load key: %1 / value: %2".arg(key).arg(JSON.stringify(settings[key])));
         return JSON.parse(settings[key]);
     }
 
     function save(key, value)
     {
+        // console.log("save key: %1 / value: %2".arg(key).arg(JSON.stringify(value)));
         settings[key] = JSON.stringify(value);
     }
 
@@ -92,6 +93,8 @@ MuseScore {
                     history.goBack();
                     cmd("note-input");
                     cmd("note-input");
+                    history.printLast(5);
+                    history.save();
                 }
             }
 
@@ -102,6 +105,8 @@ MuseScore {
                     history.goForward();
                     cmd("note-input");
                     cmd("note-input");
+                    history.printLast(5);
+                    history.save();
                 }
             }
         }
@@ -112,5 +117,6 @@ MuseScore {
         category: "plugin.nav.history"
         property string records_bk: "[]"
         property string records_fw: "[]"
+        property string currRecord: "{}"
     }
 }
