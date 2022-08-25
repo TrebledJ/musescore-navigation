@@ -78,7 +78,6 @@ MuseScore {
             width: parent.width
 
             Button {
-                // TODO: disable buttons if no data to go to.
                 Layout.fillWidth: true
                 text: qsTr("<-") // TODO: replace with icons? or at least something that looks better...
                 onClicked: {
