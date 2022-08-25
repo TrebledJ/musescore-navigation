@@ -28,7 +28,8 @@ MuseScore {
 
         prevScore = curScore;
 
-        history = new H.History(onLoad, onSave, onInfo, onError);
+        history = new H.History(load, save, onInfo, onError);
+        history.clear(); // Clear history when beginning a new session.
         history.logPosition();
     }
 
@@ -40,6 +41,7 @@ MuseScore {
             prevScore = curScore;
         } else if (state.selectionChanged) {
             console.log("selection changed");
+            history.checkCrossUpdate();
             history.logPosition();
         }
     }
@@ -60,16 +62,14 @@ MuseScore {
         dialog.open();
     }
 
-    function onLoad()
+    function load(key)
     {
-        // history.records = JSON.parse(settings.value(history.loadSaveKey, "[]"));
-        // console.log("loaded: %1".arg(JSON.stringify(history.records)));
+        return JSON.parse(settings[key]);
     }
 
-    function onSave()
+    function save(key, value)
     {
-        // console.log("saving: %1 records".arg(history.records.length));
-        // settings.setValue(history.loadSaveKey, JSON.stringify(history.records));
+        settings[key] = JSON.stringify(value);
     }
 
     MessageDialog {
@@ -85,6 +85,7 @@ MuseScore {
             width: parent.width
 
             Button {
+                // TODO: disable buttons if no data to go to.
                 Layout.fillWidth: true
                 text: qsTr("<-") // TODO: replace with icons? or at least something that looks better...
                 onClicked: {
@@ -110,5 +111,7 @@ MuseScore {
     Settings {
         id: settings
         category: "plugin.nav.history"
+        property string records_bk: "[]"
+        property string records_fw: "[]"
     }
 }

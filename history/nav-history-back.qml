@@ -2,6 +2,7 @@ import QtQuick 2.0
 import MuseScore 3.0
 import QtQuick.Controls 1.0
 import QtQuick.Dialogs 1.2
+import Qt.labs.settings 1.0
 import "history.js" as H
  
 MuseScore {
@@ -15,7 +16,7 @@ MuseScore {
             Qt.quit();
         }
 
-        var history = new H.History(onInfo, onError);
+        var history = new H.History(load, save, onInfo, onError);
         history.goBack();
         Qt.quit();
     }
@@ -36,20 +37,25 @@ MuseScore {
         dialog.open();
     }
 
-    function onLoad()
+    function load(key)
     {
-        // history.records = JSON.parse(settings.value(history.loadSaveKey, "[]"));
-        // console.log("loaded: %1".arg(JSON.stringify(history.records)));
+        return JSON.parse(settings[key]);
     }
 
-    function onSave()
+    function save(key, value)
     {
-        // console.log("saving: %1 records".arg(history.records.length));
-        // settings.setValue(history.loadSaveKey, JSON.stringify(history.records));
+        settings[key] = JSON.stringify(value);
     }
 
     MessageDialog {
         id: dialog
         onAccepted: Qt.quit()
+    }
+
+    Settings {
+        id: settings
+        category: "plugin.nav.history"
+        property string records_bk: "[]"
+        property string records_fw: "[]"
     }
 }
