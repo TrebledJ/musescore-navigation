@@ -13,10 +13,12 @@ MuseScore {
     menuPath: "Plugins.History.History UI"
 
     pluginType: "dock"
+    dockArea: "top"
     requiresScore: false
 
     width: 100
-    height: 40
+    height: 60
+    implicitHeight: 60
 
     property var prevScore: null
     property var history: null
@@ -37,8 +39,10 @@ MuseScore {
             prevScore = curScore;
             history.changeScore(curScore && curScore.scoreName);
             history.logPosition(true);
+            history.save();
         } else if (state.selectionChanged) {
             history.logPosition(true);
+            history.save();
         }
         history.printLast(5);
     }
@@ -48,6 +52,7 @@ MuseScore {
         history = new H.History(settings, onInfo, onError, 'ui');
         // history.clear(); // Clear history when beginning a new session.
         history.logPosition();
+        history.save();
     }
 
     function onInfo(msg)
@@ -81,7 +86,6 @@ MuseScore {
                 Layout.fillWidth: true
                 text: qsTr("<-") // TODO: replace with icons? or at least something that looks better...
                 onClicked: {
-                    history.logPosition(); // Save before going back.
                     history.goBack();
                     history.printLast(5);
                     history.save();

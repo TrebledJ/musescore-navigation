@@ -31,6 +31,10 @@ History.prototype.setReadonly = function (val) {
     this.readonly = val || true;
 }
 
+/**
+ * @brief   Check if other plugins were called by cross-checking the new record with history.
+ * @return  true if the new record was due to another plugin being called, false otherwise.
+ */
 History.prototype.checkCrossUpdate = function (record) {
     var this_ = this;
     function check(stack, mirror) {
@@ -44,6 +48,9 @@ History.prototype.checkCrossUpdate = function (record) {
     return check(this.score.recordsBk, this.score.recordsFw) || check(this.score.recordsFw, this.score.recordsBk);
 }
 
+/**
+ * @brief   Record the current selected position into history.
+ */
 History.prototype.logPosition = function (checkCrossUpdate) {
     if (this.ignore_next_select) {
         this.log("ignoring select");
@@ -70,9 +77,11 @@ History.prototype.logPosition = function (checkCrossUpdate) {
     }
 
     this.collateAndPush(record);
-    this.save();
 }
 
+/**
+ * @brief   Retrieves and returns a new record at the user's selection.
+ */
 History.prototype.getRecord = function () {
     var cursor = Utils.getCursorAtSelection(this.allowedElements, null, this.segmentFilter);
     if (!cursor) {
@@ -86,6 +95,9 @@ History.prototype.getRecord = function () {
     };
 }
 
+/**
+ * @brief   Try to merge the new record with the most recent record, and push it into history.
+ */
 History.prototype.collateAndPush = function (newRecord) {
     if (!this.score.currRecord) { // Nothing selected yet.
         this.score.currRecord = newRecord;
@@ -110,6 +122,9 @@ History.prototype.collateAndPush = function (newRecord) {
     }
 }
 
+/**
+ * @brief   Helper function to push into the back records and discard old records if there are too many.
+ */
 History.prototype.push = function (rec) {
     this.score.recordsBk.push(rec);
     while (this.score.recordsBk.length > this.maxRecords) {
@@ -181,6 +196,9 @@ History.prototype.shouldCollate = function (rec1, rec2) {
     return false;
 }
 
+/**
+ * @brief   Helper function to switch the "active internal pointer".
+ */
 History.prototype.changeScore = function (newName) {
     if (this.currScoreName === newName)
         return;
@@ -196,10 +214,12 @@ History.prototype.changeScore = function (newName) {
         } else {
             this.score = this.defaultScore();
         }
-        // this.log("score: %1".arg(JSON.stringify(this.score)));
     }
 }
 
+/**
+ * @brief   Helper function for generating an empty history state.
+ */
 History.prototype.defaultScore = function () {
     return {
         recordsBk: [],
@@ -208,6 +228,9 @@ History.prototype.defaultScore = function () {
     };
 }
 
+/**
+ * @brief   Fixes broken records. Hopefully this doesn't need to be called.
+ */
 History.prototype.repair = function () {
     // Nominated as the best anti-corruption watchforce of the century.
     // Repair/patch possibly corrupt data.
@@ -254,6 +277,9 @@ History.prototype.load = function () {
     this.data = JSON.parse(this.settings.data);
 }
 
+/**
+ * @brief   Get a new cursor at the given record.
+ */
 function getCursorAtRecord(rec) {
     var cursor = curScore.newCursor();
     cursor.rewind(MS.Cursor.SCORE_START);
@@ -262,6 +288,9 @@ function getCursorAtRecord(rec) {
     return cursor;
 }
 
+/**
+ * @brief   Check if two records are equal.
+ */
 function isRecordEqual(rec1, rec2) {
     return rec1.staffIdx === rec2.staffIdx
         && rec1.measure === rec2.measure
