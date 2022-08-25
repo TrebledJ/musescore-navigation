@@ -12,8 +12,8 @@ MuseScore {
     menuPath: "Plugins.History.Go Back"
 
     onRun: {
-        // Don't save. Read only.
-        var history = new H.History(load, function () {}, onInfo, onError, 'go-back');
+        var history = new H.History(settings, onInfo, onError, 'go-back');
+        history.setReadonly();
         history.goBack();
     }
 
@@ -31,11 +31,6 @@ MuseScore {
         dialog.title = qsTr("Error");
         dialog.icon = StandardIcon.Warning;
         dialog.open();
-    }
-
-    function load(key)
-    {
-        return JSON.parse(settings[key]);
     }
 
     MessageDialog {

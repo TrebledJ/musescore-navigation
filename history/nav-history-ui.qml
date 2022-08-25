@@ -44,7 +44,7 @@ MuseScore {
 
     function init()
     {
-        history = new H.History(load, save, onInfo, onError, 'ui');
+        history = new H.History(settings, onInfo, onError, 'ui');
         history.clear(); // Clear history when beginning a new session.
         history.logPosition();
     }
@@ -63,16 +63,6 @@ MuseScore {
         dialog.title = qsTr("Error");
         dialog.icon = StandardIcon.Warning;
         dialog.open();
-    }
-
-    function load(key)
-    {
-        return JSON.parse(settings[key]);
-    }
-
-    function save(key, value)
-    {
-        settings[key] = JSON.stringify(value);
     }
 
     MessageDialog {

@@ -2,7 +2,7 @@
 .import MuseScore 3.0 as MS
 
 
-function History(loadValue, saveValue, onInfo, onError, label) {
+function History(settings, onInfo, onError, label) {
     // Settings.
     this.collateMeasureThreshold = 1;
     this.collateStaffIdxThreshold = 1;
@@ -17,14 +17,18 @@ function History(loadValue, saveValue, onInfo, onError, label) {
     this.recordsBk = [];
     this.recordsFw = [];
     this.currRecord = null;
-    this.loadValue = loadValue || function () {};
-    this.saveValue = saveValue || function () {};
+    this.settings = settings;
+    this.readonly = false;
     this.onInfo = onInfo || console.log;
     this.onError = onError || console.error;
     this.log = function (x) { console.log("[%1]:".arg(label), x); };
 
     // Load existing history.
     this.load();
+}
+
+History.prototype.setReadonly = function(val) {
+    this.readonly = val || true;
 }
 
 History.prototype.checkCrossUpdate = function (record) {
@@ -192,6 +196,8 @@ History.prototype.shouldCollate = function (rec1, rec2) {
  * @brief   Save records to somewhere.
  */
 History.prototype.save = function () {
+    if (this.readonly)
+        return;
     this.log("saving: %1 back-records,  %2 fwd-records".arg(this.recordsBk.length).arg(this.recordsFw.length));
     this.saveValue('recordsBk', this.recordsBk);
     this.saveValue('recordsFw', this.recordsFw);
@@ -206,6 +212,14 @@ History.prototype.load = function () {
     this.recordsFw = this.loadValue('recordsFw');
     this.currRecord = this.loadValue('currRecord') || null;
     this.log("loaded: %1 back-records,  %2 fwd-records".arg(this.recordsBk.length).arg(this.recordsFw.length));
+}
+
+History.prototype.loadValue = function(key) {
+    return JSON.parse(this.settings[key]);
+}
+
+History.prototype.saveValue = function(key, value) {
+    this.settings[key] = JSON.stringify(value);
 }
 
 function getCursorAtRecord(rec) {
