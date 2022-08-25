@@ -113,8 +113,8 @@ MuseScore {
     Settings {
         id: settings
         category: "plugin.nav.history"
-        property string records_bk: "[]"
-        property string records_fw: "[]"
+        property string recordsBk: "[]"
+        property string recordsFw: "[]"
         property string currRecord: "{}"
     }
 }

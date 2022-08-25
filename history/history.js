@@ -14,8 +14,8 @@ function History(loadValue, saveValue, onInfo, onError, label) {
     // We'll keep the history in two stacks: a back-stack and a forward-stack.
     // When going back, a record is transferred from the back stack to the forward stack.
     // Similarly when going forward, the record is transferred the other way.
-    this.records_bk = [];
-    this.records_fw = [];
+    this.recordsBk = [];
+    this.recordsFw = [];
     this.currRecord = null;
     this.loadValue = loadValue || function () {};
     this.saveValue = saveValue || function () {};
@@ -37,7 +37,7 @@ History.prototype.checkCrossUpdate = function (record) {
         }
         return false;
     }
-    return check(this.records_bk, this.records_fw) || check(this.records_fw, this.records_bk);
+    return check(this.recordsBk, this.recordsFw) || check(this.recordsFw, this.recordsBk);
 }
 
 History.prototype.logPosition = function (checkCrossUpdate) {
@@ -58,7 +58,7 @@ History.prototype.logPosition = function (checkCrossUpdate) {
         // We'll detect by cross-checking the new selection record with the records list here.
         if (this.checkCrossUpdate(record)) {
             this.log("detected another history plugin was called...");
-            // this.log("update: %1 back elements, %2 forward elements".arg(this.records_bk.length).arg(this.records_fw.length));
+            // this.log("update: %1 back elements, %2 forward elements".arg(this.recordsBk.length).arg(this.recordsFw.length));
             this.save();
             return; // No need to push anythinng.
         }
@@ -94,11 +94,11 @@ History.prototype.collateAndPush = function (newRecord) {
     if (collate) {
         this.currRecord = newRecord;
     } else {
-        if (this.records_bk.length > 0
-            && !this.shouldCollate(this.records_bk[this.records_bk.length - 1], this.currRecord)) {
+        if (this.recordsBk.length > 0
+            && !this.shouldCollate(this.recordsBk[this.recordsBk.length - 1], this.currRecord)) {
             // `currRecord` is far enough from the last pushed record.
             this.push(this.currRecord);
-        } else if (this.records_bk.length === 0) {
+        } else if (this.recordsBk.length === 0) {
             // Or eh, there are no records so just push it.
             this.push(this.currRecord);
         }
@@ -108,9 +108,9 @@ History.prototype.collateAndPush = function (newRecord) {
 }
 
 History.prototype.push = function (rec) {
-    this.records_bk.push(rec);
-    while (this.records_bk.length > this.maxRecords) {
-        this.records_bk.shift(); // Delete front.
+    this.recordsBk.push(rec);
+    while (this.recordsBk.length > this.maxRecords) {
+        this.recordsBk.shift(); // Delete front.
     }
 }
 
@@ -120,8 +120,8 @@ History.prototype.push = function (rec) {
 History.prototype.printLast = function (n) {
     n = n || 5;
     this.log("last %1 records:".arg(n));
-    for (var i = Math.max(this.records_bk.length - n + 1, 0); i < this.records_bk.length; i++) {
-        this.log(" [%1]: m: %2 / s: %3".arg(i).arg(this.records_bk[i].measure).arg(this.records_bk[i].staffIdx));
+    for (var i = Math.max(this.recordsBk.length - n + 1, 0); i < this.recordsBk.length; i++) {
+        this.log(" [%1]: m: %2 / s: %3".arg(i).arg(this.recordsBk[i].measure).arg(this.recordsBk[i].staffIdx));
     }
     if (this.currRecord)
         this.log(" [*]: m: %1 / s: %2".arg(this.currRecord.measure).arg(this.currRecord.staffIdx));
@@ -133,8 +133,8 @@ History.prototype.printLast = function (n) {
  * @brief   Clear all records.
  */
 History.prototype.clear = function() {
-    this.records_bk = [];
-    this.records_fw = [];
+    this.recordsBk = [];
+    this.recordsFw = [];
     this.currRecord = null;
     this.save();
 }
@@ -143,15 +143,15 @@ History.prototype.clear = function() {
  * @brief   Select the last back record and move it to the forward-stack.
  */
 History.prototype.goBack = function () {
-    // For records_bk, look 2 elements back, since the top-most element is the current position.
-    this.goImpl(this.records_bk, this.records_fw);
+    // For recordsBk, look 2 elements back, since the top-most element is the current position.
+    this.goImpl(this.recordsBk, this.recordsFw);
 }
 
 /**
  * @brief   Select the next forward record and move it to the back-stack.
  */
 History.prototype.goForward = function () {
-    this.goImpl(this.records_fw, this.records_bk);
+    this.goImpl(this.recordsFw, this.recordsBk);
 }
 
 /**
@@ -192,9 +192,9 @@ History.prototype.shouldCollate = function (rec1, rec2) {
  * @brief   Save records to somewhere.
  */
 History.prototype.save = function () {
-    this.log("saving: %1 back-records,  %2 fwd-records".arg(this.records_bk.length).arg(this.records_fw.length));
-    this.saveValue('records_bk', this.records_bk);
-    this.saveValue('records_fw', this.records_fw);
+    this.log("saving: %1 back-records,  %2 fwd-records".arg(this.recordsBk.length).arg(this.recordsFw.length));
+    this.saveValue('recordsBk', this.recordsBk);
+    this.saveValue('recordsFw', this.recordsFw);
     this.saveValue('currRecord', this.currRecord || {});
 }
 
@@ -202,10 +202,10 @@ History.prototype.save = function () {
  * @brief   Load records from somewhere.
  */
 History.prototype.load = function () {
-    this.records_bk = this.loadValue('records_bk');
-    this.records_fw = this.loadValue('records_fw');
+    this.recordsBk = this.loadValue('recordsBk');
+    this.recordsFw = this.loadValue('recordsFw');
     this.currRecord = this.loadValue('currRecord') || null;
-    this.log("loaded: %1 back-records,  %2 fwd-records".arg(this.records_bk.length).arg(this.records_fw.length));
+    this.log("loaded: %1 back-records,  %2 fwd-records".arg(this.recordsBk.length).arg(this.recordsFw.length));
 }
 
 function getCursorAtRecord(rec) {
