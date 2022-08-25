@@ -14,7 +14,7 @@ MuseScore {
     onRun: {
         var history = new H.History(settings, onInfo, onError, 'go-fwd');
         history.setReadonly();
-        history.goBack();
+        history.goForward();
         history.printLast();
     }
 
