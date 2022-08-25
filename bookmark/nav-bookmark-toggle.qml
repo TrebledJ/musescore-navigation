@@ -11,13 +11,8 @@ MuseScore {
     menuPath: "Plugins.Bookmarks.Toggle at Selection"
 
     onRun: {
-        if (!curScore) {
-            Qt.quit();
-        }
-
         var bk = new B.BookmarkCursor(onInfo, onError);
         bk.toggleBookmark();
-        Qt.quit();
     }
 
     function onInfo(msg)
@@ -38,6 +33,5 @@ MuseScore {
 
     MessageDialog {
         id: dialog
-        onAccepted: Qt.quit()
     }
 }

@@ -22,18 +22,16 @@ MuseScore {
     property var history: null
 
     onRun: {
-        if (!curScore) {
-            Qt.quit();
-        }
+        if (!curScore)
+            return;
 
         prevScore = curScore;
-
-        history = new H.History(load, save, onInfo, onError, 'ui');
-        history.clear(); // Clear history when beginning a new session.
-        history.logPosition();
     }
 
     onScoreStateChanged: {
+        if (!history) {
+            init();
+        }
         if (!curScore.is(prevScore)) {
             console.log("score changed");
             // history.clear();
@@ -42,6 +40,13 @@ MuseScore {
         } else if (state.selectionChanged) {
             history.logPosition(true);
         }
+    }
+
+    function init()
+    {
+        history = new H.History(load, save, onInfo, onError, 'ui');
+        history.clear(); // Clear history when beginning a new session.
+        history.logPosition();
     }
 
     function onInfo(msg)
@@ -62,19 +67,16 @@ MuseScore {
 
     function load(key)
     {
-        // console.log("load key: %1 / value: %2".arg(key).arg(JSON.stringify(settings[key])));
         return JSON.parse(settings[key]);
     }
 
     function save(key, value)
     {
-        // console.log("save key: %1 / value: %2".arg(key).arg(JSON.stringify(value)));
         settings[key] = JSON.stringify(value);
     }
 
     MessageDialog {
         id: dialog
-        // onAccepted: Qt.quit()
     }
 
     ColumnLayout {

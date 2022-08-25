@@ -12,14 +12,9 @@ MuseScore {
     menuPath: "Plugins.History.Go Back"
 
     onRun: {
-        if (!curScore) {
-            Qt.quit();
-        }
-
         // Don't save. Read only.
         var history = new H.History(load, function () {}, onInfo, onError, 'go-back');
         history.goBack();
-        // Qt.quit(); // Uncommenting this will cause other plugins to quit as well. :(
     }
 
     function onInfo(msg)

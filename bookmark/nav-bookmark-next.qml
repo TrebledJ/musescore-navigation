@@ -12,13 +12,8 @@ MuseScore {
     menuPath: "Plugins.Bookmarks.Select Next Bookmark"
 
     onRun: {
-        if (!curScore) {
-            Qt.quit();
-        }
-
         var bk = new B.BookmarkCursor(onInfo, onError);
         bk.selectNextBookmark();
-        // Qt.quit();
     }
 
     function onInfo(msg)
@@ -39,6 +34,5 @@ MuseScore {
 
     MessageDialog {
         id: dialog
-        onAccepted: Qt.quit()
     }
 }
