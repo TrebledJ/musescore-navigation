@@ -16,9 +16,10 @@ MuseScore {
             Qt.quit();
         }
 
-        var history = new H.History(load, save, onInfo, onError);
+        // Don't save. Read only.
+        var history = new H.History(load, function () {}, onInfo, onError, 'go-back');
         history.goBack();
-        Qt.quit();
+        // Qt.quit(); // Uncommenting this will cause other plugins to quit as well. :(
     }
 
     function onInfo(msg)
@@ -42,14 +43,8 @@ MuseScore {
         return JSON.parse(settings[key]);
     }
 
-    function save(key, value)
-    {
-        settings[key] = JSON.stringify(value);
-    }
-
     MessageDialog {
         id: dialog
-        onAccepted: Qt.quit()
     }
 
     Settings {

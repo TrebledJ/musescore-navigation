@@ -28,7 +28,7 @@ MuseScore {
 
         prevScore = curScore;
 
-        history = new H.History(load, save, onInfo, onError);
+        history = new H.History(load, save, onInfo, onError, 'ui');
         history.clear(); // Clear history when beginning a new session.
         history.logPosition();
     }
@@ -41,8 +41,7 @@ MuseScore {
             prevScore = curScore;
         } else if (state.selectionChanged) {
             console.log("selection changed");
-            history.checkCrossUpdate();
-            history.logPosition();
+            history.logPosition(true);
         }
     }
 

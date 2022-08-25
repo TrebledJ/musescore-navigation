@@ -2,12 +2,11 @@
 .import MuseScore 3.0 as MS
 
 
-function History(loadValue, saveValue, onInfo, onError) {
+function History(loadValue, saveValue, onInfo, onError, label) {
     // Settings.
     this.collateMeasureThreshold = 1;
     this.collateStaffIdxThreshold = 1;
     this.maxRecords = 40;
-    // this.allowedElements = [Element.CHORD, Element.REST, Element.NOTE];
     this.allowedElements = null; // Allow any.
     this.segmentFilter = Segment.All;
 
@@ -23,32 +22,13 @@ function History(loadValue, saveValue, onInfo, onError) {
     this.saveValue = saveValue || function () {};
     this.onInfo = onInfo || console.log;
     this.onError = onError || console.error;
+    this.log = function (x) { console.log("[%1]:".arg(label), x); };
     this.load();
 }
 
-/**
- * @brief   Perform checks to see if other plugin actions modified the records list
- *          and update the records here accordingly.
- */
-History.prototype.checkCrossUpdate = function () {
-    // Copy old records.
-    var old_bk = this.records_bk;
-    var old_fw = this.records_fw;
-    this.load();
-    var new_bk = this.records_bk;
-    var new_fw = this.records_fw;
-    console.log("old -- bk: %1 elements,  fw: %2 elements".arg(old_bk.length).arg(old_fw.length));
-    console.log("new -- bk: %1 elements,  fw: %2 elements".arg(new_bk.length).arg(new_fw.length));
-    if (Math.abs(old_bk.length - new_bk.length) === 1 && Math.abs(old_fw.length - new_fw.length) === 1) {
-        // Both stacks differ by 1, they must've been updated by another plugin.
-        console.log("differ by 1 -- update by another plugin");
-        this.ignore_next_select = true;
-    }
-}
-
-History.prototype.logPosition = function () {
+History.prototype.logPosition = function (checkCrossUpdate) {
     if (this.ignore_next_select) {
-        console.log("ignoring select");
+        this.log("ignoring select");
         this.ignore_next_select = false;
         return;
     }
@@ -57,7 +37,29 @@ History.prototype.logPosition = function () {
     if (!record)
         return;
 
-    console.log(JSON.stringify(record));
+    this.log("got record: %1".arg(JSON.stringify(record)));
+
+    if (checkCrossUpdate) {
+        // Perform checks to see if other plugin actions were called.
+        // We'll detect by cross-checking the new selection record with the records list here.
+        var crossUpdate = false;
+        if (this.records_bk.length >= 2 && isRecordEqual(this.records_bk[this.records_bk.length - 2], record)) {
+            // Record is same as top of bk --> go-back action was called.
+            this.log("detected go-back action was called")
+            this.records_fw.push(this.records_bk.pop());
+            crossUpdate = true;
+        } else if (this.records_fw.length >= 1 && isRecordEqual(this.records_fw[this.records_fw.length - 1], record)) {
+            // Record is same as top of fw --> go-forward action was called.
+            this.log("detected go-forward action was called")
+            this.records_bk.push(this.records_fw.pop());
+            crossUpdate = true;
+        }
+        if (crossUpdate) {
+            this.log("update: %1 back elements, %2 forward elements".arg(this.records_bk.length).arg(this.records_fw.length));
+            return; // No need to push anythinng.
+        }
+    }
+
     this.collateAndPush(record);
     this.save();
 }
@@ -65,7 +67,7 @@ History.prototype.logPosition = function () {
 History.prototype.getRecord = function () {
     var cursor = Utils.getCursorAtSelection(this.allowedElements, null, this.segmentFilter);
     if (!cursor) {
-        console.log("nothing selected");
+        this.log("nothing selected");
         return null;
     }
 
@@ -73,7 +75,7 @@ History.prototype.getRecord = function () {
     return {
         staffIdx: cursor.staffIdx,
         measure: Utils.getCursorMeasureNumber(cursor),
-        part: cursor.element.staff.part.partName,
+        // part: cursor.element.staff.part.partName,
     };
 }
 
@@ -84,8 +86,8 @@ History.prototype.collateAndPush = function (curr) {
         collate = this.shouldCollate(curr, prev);
     }
 
-    console.log("collate? %1".arg(collate));
-    console.log("curr: %1  /  prev: %2".arg(JSON.stringify(curr)).arg(JSON.stringify(prev)));
+    this.log("collate? %1".arg(collate));
+    this.log("curr: %1  /  prev: %2".arg(JSON.stringify(curr)).arg(JSON.stringify(prev)));
 
     // If collate, do nothing except update `prevRecord`.
     if (collate) {
@@ -102,12 +104,12 @@ History.prototype.collateAndPush = function (curr) {
         //     // `prevRecord` is far from the last pushed record.
         //     // Push `prevRecord` as well so that when the user goes back, 
         //     // it will return to their most recent selection.
-        //     console.log("pushing prev record");
+        //     this.log("pushing prev record");
         //     this.push(this.prevRecord);
         // }
 
         // if (this.records_bk.length === 0) {
-        //     console.log("pushing curr");
+        //     this.log("pushing curr");
         //     this.push(curr);
         // }
         
@@ -131,9 +133,9 @@ History.prototype.push = function (rec) {
  */
 History.prototype.printLast = function (n) {
     n = n || 5;
-    console.log("last %1 records:".arg(n));
+    this.log("last %1 records:".arg(n));
     for (var i = Math.max(this.records_bk.length - n, 0); i < this.records_bk.length; i++) {
-        console.log(" [%1]: m: %2 / s: %3 / p: %4".arg(i).arg(this.records_bk[i].measure).arg(this.records_bk[i].staffIdx).arg(this.records_bk[i].part));
+        this.log(" [%1]: m: %2 / s: %3".arg(i).arg(this.records_bk[i].measure).arg(this.records_bk[i].staffIdx));
     }
 }
 
@@ -198,7 +200,7 @@ History.prototype.shouldCollate = function (rec1, rec2) {
  * @brief   Save records to somewhere.
  */
 History.prototype.save = function () {
-    console.log("saving: %1 back-records,  %2 fwd-records".arg(this.records_bk.length).arg(this.records_fw.length));
+    this.log("saving: %1 back-records,  %2 fwd-records".arg(this.records_bk.length).arg(this.records_fw.length));
     this.saveValue('records_bk', this.records_bk);
     this.saveValue('records_fw', this.records_fw);
 }
@@ -210,7 +212,7 @@ History.prototype.load = function () {
     this.records_bk = this.loadValue('records_bk');
     this.records_fw = this.loadValue('records_fw');
     // this.prevRecord = this.records_bk ? this.records_bk[this.records_bk.length - 1] : null;
-    console.log("loaded: %1 back-records,  %2 fwd-records".arg(this.records_bk.length).arg(this.records_fw.length));
+    this.log("loaded: %1 back-records,  %2 fwd-records".arg(this.records_bk.length).arg(this.records_fw.length));
 }
 
 function getCursorAtRecord(rec) {
@@ -219,4 +221,9 @@ function getCursorAtRecord(rec) {
     for (var i = 0; i < rec.measure - 1; cursor.nextMeasure(), i++);
     cursor.staffIdx = rec.staffIdx;
     return cursor;
+}
+
+function isRecordEqual(rec1, rec2) {
+    return rec1.staffIdx === rec2.staffIdx
+            && rec1.measure === rec2.measure
 }
