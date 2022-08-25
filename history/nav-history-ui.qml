@@ -99,16 +99,6 @@ MuseScore {
                 }
             }
         }
-
-        RowLayout {
-            width: parent.width
-
-            Button {
-                Layout.fillWidth: true
-                text: "quit"
-                onClicked: Qt.quit()
-            }
-        }
     }
 
     Settings {
