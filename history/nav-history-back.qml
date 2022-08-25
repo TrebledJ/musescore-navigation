@@ -15,6 +15,7 @@ MuseScore {
         var history = new H.History(settings, onInfo, onError, 'go-back');
         history.setReadonly();
         history.goBack();
+        history.printLast();
     }
 
     function onInfo(msg)
@@ -40,8 +41,6 @@ MuseScore {
     Settings {
         id: settings
         category: "plugin.nav.history"
-        property string recordsBk: "[]"
-        property string recordsFw: "[]"
-        property string currRecord: "{}"
+        property string data: "{}"
     }
 }

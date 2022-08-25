@@ -25,6 +25,7 @@ MuseScore {
         if (!curScore)
             return;
 
+        init();
         prevScore = curScore;
     }
 
@@ -33,19 +34,19 @@ MuseScore {
             init();
         }
         if (!curScore.is(prevScore)) {
-            console.log("score changed");
-            // history.clear();
-            // TODO: keep history between scores.
             prevScore = curScore;
+            history.changeScore(curScore && curScore.scoreName);
+            history.logPosition(true);
         } else if (state.selectionChanged) {
             history.logPosition(true);
         }
+        history.printLast(5);
     }
 
     function init()
     {
         history = new H.History(settings, onInfo, onError, 'ui');
-        history.clear(); // Clear history when beginning a new session.
+        // history.clear(); // Clear history when beginning a new session.
         history.logPosition();
     }
 
@@ -98,13 +99,21 @@ MuseScore {
                 }
             }
         }
+
+        RowLayout {
+            width: parent.width
+
+            Button {
+                Layout.fillWidth: true
+                text: "quit"
+                onClicked: Qt.quit()
+            }
+        }
     }
 
     Settings {
         id: settings
         category: "plugin.nav.history"
-        property string recordsBk: "[]"
-        property string recordsFw: "[]"
-        property string currRecord: "{}"
+        property string data: "{}"
     }
 }

@@ -14,9 +14,8 @@ function History(settings, onInfo, onError, label) {
     // We'll keep the history in two stacks: a back-stack and a forward-stack.
     // When going back, a record is transferred from the back stack to the forward stack.
     // Similarly when going forward, the record is transferred the other way.
-    this.recordsBk = [];
-    this.recordsFw = [];
-    this.currRecord = null;
+    this.currScoreName = '';
+    this.score = this.defaultScore();
     this.settings = settings;
     this.readonly = false;
     this.onInfo = onInfo || console.log;
@@ -25,9 +24,10 @@ function History(settings, onInfo, onError, label) {
 
     // Load existing history.
     this.load();
+    this.changeScore(curScore && curScore.scoreName);
 }
 
-History.prototype.setReadonly = function(val) {
+History.prototype.setReadonly = function (val) {
     this.readonly = val || true;
 }
 
@@ -35,13 +35,13 @@ History.prototype.checkCrossUpdate = function (record) {
     var this_ = this;
     function check(stack, mirror) {
         if (stack.length >= 1 && isRecordEqual(stack[stack.length - 1], record)) {
-            mirror.push(this_.currRecord);
-            this_.currRecord = stack.pop();
+            mirror.push(this_.score.currRecord);
+            this_.score.currRecord = stack.pop();
             return true;
         }
         return false;
     }
-    return check(this.recordsBk, this.recordsFw) || check(this.recordsFw, this.recordsBk);
+    return check(this.score.recordsBk, this.score.recordsFw) || check(this.score.recordsFw, this.score.recordsBk);
 }
 
 History.prototype.logPosition = function (checkCrossUpdate) {
@@ -55,21 +55,21 @@ History.prototype.logPosition = function (checkCrossUpdate) {
     if (!record)
         return;
 
-    this.log("got record: %1".arg(JSON.stringify(record)));
+    this.log("new record: %1".arg(JSON.stringify(record)));
+    // this.log("logPosition: bk: %1 / fw: %2".arg(recordsStackTrace(this.score.recordsBk)).arg(recordsStackTrace(this.score.recordsFw)));
 
     if (checkCrossUpdate) {
         // Perform checks to see if other plugin actions were called.
         // We'll detect by cross-checking the new selection record with the records list here.
         if (this.checkCrossUpdate(record)) {
             this.log("detected another history plugin was called...");
-            // this.log("update: %1 back elements, %2 forward elements".arg(this.recordsBk.length).arg(this.recordsFw.length));
+            // this.log("update: %1 back elements, %2 forward elements".arg(this.score.recordsBk.length).arg(this.score.recordsFw.length));
             this.save();
             return; // No need to push anythinng.
         }
     }
 
     this.collateAndPush(record);
-    this.printLast(5);
     this.save();
 }
 
@@ -80,7 +80,6 @@ History.prototype.getRecord = function () {
         return null;
     }
 
-    // TODO: track score also.
     return {
         staffIdx: cursor.staffIdx,
         measure: Utils.getCursorMeasureNumber(cursor),
@@ -88,33 +87,33 @@ History.prototype.getRecord = function () {
 }
 
 History.prototype.collateAndPush = function (newRecord) {
-    if (!this.currRecord) {
-        this.currRecord = newRecord;
+    if (!this.score.currRecord) { // Nothing selected yet.
+        this.score.currRecord = newRecord;
         return;
     }
-    var collate = this.shouldCollate(newRecord, this.currRecord);
+    var collate = this.shouldCollate(newRecord, this.score.currRecord);
 
     // If collate, do nothing except update `currRecord`.
     if (collate) {
-        this.currRecord = newRecord;
+        this.score.currRecord = newRecord;
     } else {
-        if (this.recordsBk.length > 0
-            && !this.shouldCollate(this.recordsBk[this.recordsBk.length - 1], this.currRecord)) {
+        if (this.score.recordsBk.length > 0
+            && !this.shouldCollate(this.score.recordsBk[this.score.recordsBk.length - 1], this.score.currRecord)) {
             // `currRecord` is far enough from the last pushed record.
-            this.push(this.currRecord);
-        } else if (this.recordsBk.length === 0) {
+            this.push(this.score.currRecord);
+        } else if (this.score.recordsBk.length === 0) {
             // Or eh, there are no records so just push it.
-            this.push(this.currRecord);
+            this.push(this.score.currRecord);
         }
 
-        this.currRecord = newRecord;
+        this.score.currRecord = newRecord;
     }
 }
 
 History.prototype.push = function (rec) {
-    this.recordsBk.push(rec);
-    while (this.recordsBk.length > this.maxRecords) {
-        this.recordsBk.shift(); // Delete front.
+    this.score.recordsBk.push(rec);
+    while (this.score.recordsBk.length > this.maxRecords) {
+        this.score.recordsBk.shift(); // Delete front.
     }
 }
 
@@ -124,23 +123,13 @@ History.prototype.push = function (rec) {
 History.prototype.printLast = function (n) {
     n = n || 5;
     this.log("last %1 records:".arg(n));
-    for (var i = Math.max(this.recordsBk.length - n + 1, 0); i < this.recordsBk.length; i++) {
-        this.log(" [%1]: m: %2 / s: %3".arg(i).arg(this.recordsBk[i].measure).arg(this.recordsBk[i].staffIdx));
+    for (var i = Math.max(this.score.recordsBk.length - n + 1, 0); i < this.score.recordsBk.length; i++) {
+        this.log(" [%1]: m: %2 / s: %3".arg(i).arg(this.score.recordsBk[i].measure).arg(this.score.recordsBk[i].staffIdx));
     }
-    if (this.currRecord)
-        this.log(" [*]: m: %1 / s: %2".arg(this.currRecord.measure).arg(this.currRecord.staffIdx));
+    if (this.score.currRecord)
+        this.log(" [*]: m: %1 / s: %2".arg(this.score.currRecord.measure).arg(this.score.currRecord.staffIdx));
     else
         this.log(" [*]: null");
-}
-
-/**
- * @brief   Clear all records.
- */
-History.prototype.clear = function() {
-    this.recordsBk = [];
-    this.recordsFw = [];
-    this.currRecord = null;
-    this.save();
 }
 
 /**
@@ -148,14 +137,14 @@ History.prototype.clear = function() {
  */
 History.prototype.goBack = function () {
     // For recordsBk, look 2 elements back, since the top-most element is the current position.
-    this.goImpl(this.recordsBk, this.recordsFw);
+    this.goImpl(this.score.recordsBk, this.score.recordsFw);
 }
 
 /**
  * @brief   Select the next forward record and move it to the back-stack.
  */
 History.prototype.goForward = function () {
-    this.goImpl(this.recordsFw, this.recordsBk);
+    this.goImpl(this.score.recordsFw, this.score.recordsBk);
 }
 
 /**
@@ -173,8 +162,8 @@ History.prototype.goImpl = function (stack, mirror) {
     var selectable = Utils.getSelectableAtStaff(cursor, rec.staffIdx);
     curScore.selection.select(selectable);
 
-    mirror.push(this.currRecord);
-    this.currRecord = stack.pop();
+    mirror.push(this.score.currRecord);
+    this.score.currRecord = stack.pop();
     this.ignore_next_select = true;
 
     Utils.jumpToSelection()
@@ -192,34 +181,77 @@ History.prototype.shouldCollate = function (rec1, rec2) {
     return false;
 }
 
+History.prototype.changeScore = function (newName) {
+    if (this.currScoreName === newName)
+        return;
+    if (this.currScoreName) {
+        this.data[this.currScoreName] = this.score;
+    }
+    this.log("changing score from {%1} to {%2}".arg(this.currScoreName).arg(newName));
+    if (newName) {
+        this.currScoreName = newName;
+        this.score = this.data[newName];
+        if (this.score) {
+            // this.repair();
+        } else {
+            this.score = this.defaultScore();
+        }
+        // this.log("score: %1".arg(JSON.stringify(this.score)));
+    }
+}
+
+History.prototype.defaultScore = function () {
+    return {
+        recordsBk: [],
+        recordsFw: [],
+        currRecord: null
+    };
+}
+
+History.prototype.repair = function () {
+    // Nominated as the best anti-corruption watchforce of the century.
+    // Repair/patch possibly corrupt data.
+    function repair(stack) {
+        if (!stack) return [];
+        var newStack = [];
+        for (var i = 0; i < stack.length; i++) {
+            if (stack[i])
+                newStack.push(stack[i]);
+        }
+        return newStack;
+    }
+    this.score.recordsBk = repair(this.score.recordsBk);
+    this.score.recordsFw = repair(this.score.recordsFw);
+}
+
+/**
+ * @brief   Clear all records.
+ */
+ History.prototype.clear = function () {
+    this.score = this.defaultScore();
+    this.data = {};
+    this.save();
+}
+
 /**
  * @brief   Save records to somewhere.
  */
 History.prototype.save = function () {
     if (this.readonly)
         return;
-    this.log("saving: %1 back-records,  %2 fwd-records".arg(this.recordsBk.length).arg(this.recordsFw.length));
-    this.saveValue('recordsBk', this.recordsBk);
-    this.saveValue('recordsFw', this.recordsFw);
-    this.saveValue('currRecord', this.currRecord || {});
+    // this.log("saving score: %1".arg(JSON.stringify(this.score)));
+    if (this.currScoreName) {
+        // this.log("updating data for score {%1}".arg(this.currScoreName));
+        this.data[this.currScoreName] = this.score;
+    }
+    this.settings.data = JSON.stringify(this.data);
 }
 
 /**
  * @brief   Load records from somewhere.
  */
 History.prototype.load = function () {
-    this.recordsBk = this.loadValue('recordsBk');
-    this.recordsFw = this.loadValue('recordsFw');
-    this.currRecord = this.loadValue('currRecord') || null;
-    this.log("loaded: %1 back-records,  %2 fwd-records".arg(this.recordsBk.length).arg(this.recordsFw.length));
-}
-
-History.prototype.loadValue = function(key) {
-    return JSON.parse(this.settings[key]);
-}
-
-History.prototype.saveValue = function(key, value) {
-    this.settings[key] = JSON.stringify(value);
+    this.data = JSON.parse(this.settings.data);
 }
 
 function getCursorAtRecord(rec) {
@@ -232,5 +264,5 @@ function getCursorAtRecord(rec) {
 
 function isRecordEqual(rec1, rec2) {
     return rec1.staffIdx === rec2.staffIdx
-            && rec1.measure === rec2.measure
+        && rec1.measure === rec2.measure
 }
