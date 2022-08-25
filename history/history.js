@@ -172,6 +172,8 @@ History.prototype.goImpl = function (stack, mirror) {
     mirror.push(this.currRecord);
     this.currRecord = stack.pop();
     this.ignore_next_select = true;
+
+    Utils.jumpToSelection()
 }
 
 /**

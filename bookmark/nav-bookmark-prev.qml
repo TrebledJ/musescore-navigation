@@ -17,11 +17,7 @@ MuseScore {
 
         var bk = new B.BookmarkCursor(onInfo, onError);
         bk.selectPrevBookmark();
-
-        // Refresh canvas and jump to selection.
-        cmd("note-input");
-        cmd("note-input");
-        Qt.quit();
+        // Qt.quit();
     }
 
     function onInfo(msg)

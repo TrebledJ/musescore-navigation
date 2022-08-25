@@ -2,6 +2,7 @@ import QtQuick 2.0
 import MuseScore 3.0
 import QtQuick.Controls 1.0
 import QtQuick.Dialogs 1.2
+
 import "bookmarks.js" as B
  
 MuseScore {
@@ -17,11 +18,7 @@ MuseScore {
 
         var bk = new B.BookmarkCursor(onInfo, onError);
         bk.selectNextBookmark();
-
-        // Refresh canvas and jump to selection.
-        cmd("note-input");
-        cmd("note-input");
-        Qt.quit();
+        // Qt.quit();
     }
 
     function onInfo(msg)

@@ -126,6 +126,7 @@ BookmarkCursor.prototype.selectPrevOrNextBookmark = function (dir) {
         },
         function () { this_.onInfo(qsTr("No more bookmarks to select.")); }
     );
+    Utils.jumpToSelection();
 }
 
 /**

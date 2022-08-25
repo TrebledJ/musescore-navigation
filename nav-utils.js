@@ -176,3 +176,9 @@ function indexOfStaff(staves, e) {
 function getStaffIdx(seg, e) {
     return indexOfStaff(getStaves(seg), e);
 }
+
+function jumpToSelection() {
+    // Toggle note input. A bit hacky, but it does the job.
+    cmd("note-input");
+    cmd("note-input");
+}

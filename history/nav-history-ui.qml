@@ -91,8 +91,6 @@ MuseScore {
                 onClicked: {
                     history.logPosition(); // Save before going back.
                     history.goBack();
-                    cmd("note-input");
-                    cmd("note-input");
                     history.printLast(5);
                     history.save();
                 }
@@ -103,8 +101,6 @@ MuseScore {
                 text: qsTr("->")
                 onClicked: {
                     history.goForward();
-                    cmd("note-input");
-                    cmd("note-input");
                     history.printLast(5);
                     history.save();
                 }
