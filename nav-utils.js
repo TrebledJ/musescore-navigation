@@ -23,7 +23,7 @@ function getCursorAtSelection(allowedElements, onError, segmentFilter) {
     if (segmentFilter)
         cursor.filter = segmentFilter;
 
-    console.log("curScore.selection: %1 elements".arg(curScore.selection.elements.length));
+    // console.log("curScore.selection: %1 elements".arg(curScore.selection.elements.length));
 
     if (!cursor.segment && !cursor.element && curScore.selection.elements.length === 0) {
         onError(qsTr("Please select a note or rest, and try again."));
@@ -37,12 +37,12 @@ function getCursorAtSelection(allowedElements, onError, segmentFilter) {
             onError(qsTr("Selection isn't note or rest."));
             return null;
         }
-        console.log("found cursor from range selection");
+        // console.log("found cursor from range selection");
         return cursor;
     }
 
-    console.log("could not find cursor...");
-    console.log("falling back to analysing curScore.selection...");
+    // console.log("could not find cursor...");
+    // console.log("falling back to analysing curScore.selection...");
 
     // 3.
     var es = curScore.selection.elements;
@@ -51,7 +51,7 @@ function getCursorAtSelection(allowedElements, onError, segmentFilter) {
     }
     e = es[0];
 
-    console.log("element: %1 / %2".arg(e.type).arg(e.name));
+    // console.log("element: %1 / %2".arg(e.type).arg(e.name));
     if (allowedElements && !includes(allowedElements, e.type)) {
         onError(qsTr("Selection isn't note or rest."));
         return null;
@@ -68,7 +68,7 @@ function getCursorAtSelection(allowedElements, onError, segmentFilter) {
     cursor.rewind(MS.Cursor.SCORE_START);
     while (cursor.segment) {
         if (cursor.segment.is(seg)) {
-            console.log("found matching segment");
+            // console.log("found matching segment");
             break;
         }
         cursor.next();
@@ -83,7 +83,7 @@ function getCursorAtSelection(allowedElements, onError, segmentFilter) {
     var staves = getStaves(seg);
     var staffIdx = indexOfStaff(staves, e);
     cursor.staffIdx = staffIdx;
-    console.log("staffIdx: %1 / num: %2".arg(staffIdx).arg(staves.length));
+    // console.log("staffIdx: %1 / num: %2".arg(staffIdx).arg(staves.length));
 
     return cursor;
 }
