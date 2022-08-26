@@ -1,5 +1,5 @@
 # musescore-navigation
-Feature-rich navigation plugin set for MuseScore. Jump around like a deranged person walking bare foot on a hot beach.
+Feature-rich navigation plugins for MuseScore. Jump around like a deranged person walking barefoot on a hot beach.
 
 Inspired by common IDE functionality/extensions, these plugins are intended for composers, arrangers, and—well, MuseScore users in general—enhancing the quality of life of navigating and editing scores.
 
@@ -51,14 +51,14 @@ With `musescore-navigation.bookmarks`, there are four (4) commands to be aware o
 * **Select Next Bookmark** (`nav-bookmark-next`). Jumps to the next bookmark and selects the note/rest underneath.
 * **Clear All** (`nav-bookmark-clear-all`). Removes all bookmarks from the current score.
 
-I like to use keybindings for the first three plugins to easily toggle and jump between bookmarks.
+I like to use the following keybindings for the first three plugins to easily toggle and jump between bookmarks:
 
-* Toggle: **<kbd>⌥</kbd> + <kbd>K</kbd>**
-* Previous: **<kbd>⌥</kbd> + <kbd>J</kbd>**
-* Next: **<kbd>⌥</kbd> + <kbd>L</kbd>**
+* Toggle: <kbd>⌥</kbd> + <kbd>K</kbd> (or <kbd>Alt</kbd> + <kbd>K</kbd>)
+* Previous: <kbd>⌥</kbd> + <kbd>J</kbd> (or <kbd>Alt</kbd> + <kbd>J</kbd>)
+* Next: <kbd>⌥</kbd> + <kbd>L</kbd> (or <kbd>Alt</kbd> + <kbd>L</kbd>)
 
 #### Notes
-* Implementation-wise, the plugin uses tiny invisible staff-text to keep track of—and search for—bookmarks. You may add or delete them as you like without any impact to the plugin.
+* Implementation-wise, the plugin uses tiny invisible staff-text to keep track of—and search for—bookmarks. You may add or delete them as you like without any impact to the plugins.
 * Make sure to select a note, chord, rest, or range before toggling.
 
 ### History
