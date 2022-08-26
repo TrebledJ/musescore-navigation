@@ -84,7 +84,7 @@ MuseScore {
 
             Button {
                 Layout.fillWidth: true
-                text: qsTr("<-") // TODO: replace with icons? or at least something that looks better...
+                text: qsTr("←")
                 onClicked: {
                     history.goBack();
                     history.printLast(5);
@@ -94,7 +94,7 @@ MuseScore {
 
             Button {
                 Layout.fillWidth: true
-                text: qsTr("->")
+                text: qsTr("→")
                 onClicked: {
                     history.goForward();
                     history.printLast(5);
