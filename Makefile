@@ -8,7 +8,7 @@
 BUILD_DIR := build
 ZIP_NAME := v3.0.0
 
-BOOKMARK_PATH := bookmark
+BOOKMARK_PATH := bookmarks
 BOOKMARK_FILES := bookmarks.js 
 BOOKMARK_FILES += nav-bookmark-clear-all.qml
 BOOKMARK_FILES += nav-bookmark-next.qml
@@ -42,7 +42,7 @@ zip:
 	cd $(BUILD_DIR) && zip -r "$(ZIP_NAME).zip" . -x ".*" -x "__MACOSX"
 
 utils: $(UTIL_FILES)
-	cp "$^" $(BUILD_DIR)
+	cp $^ $(BUILD_DIR)
 
 bookmark: subdir = $(BOOKMARK_PATH)
 bookmark: bookmark-mkdir $(BOOKMARK_FILES)
