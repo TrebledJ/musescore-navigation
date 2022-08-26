@@ -118,6 +118,8 @@ MuseScore {
         }
     }
 
+    // TODO: implement UI settings to configure history options.
+
     Settings {
         id: settings
         category: "plugin.nav.history"

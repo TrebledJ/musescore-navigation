@@ -18,7 +18,6 @@ function History(settings, onInfo, onError, label) {
     this.score = this.defaultScore();
     this.label = label;
     this.settings = settings;
-    this.readonly = false;
     this.onInfo = onInfo || console.log;
     this.onError = onError || console.error;
     this.log = function (x) { console.log("[%1]:".arg(label), x); };
@@ -26,10 +25,6 @@ function History(settings, onInfo, onError, label) {
     // Load existing history.
     this.load();
     this.changeScore(curScore && curScore.scoreName);
-}
-
-History.prototype.setReadonly = function (val) {
-    this.readonly = val || true;
 }
 
 /**
@@ -310,8 +305,6 @@ History.prototype.repair = function () {
  * @brief   Save records to somewhere.
  */
 History.prototype.save = function () {
-    if (this.readonly)
-        return;
     // this.log("saving score: %1".arg(JSON.stringify(this.score)));
     if (this.currScoreName) {
         // this.log("updating data for score {%1}".arg(this.currScoreName));

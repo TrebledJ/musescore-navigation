@@ -13,7 +13,6 @@ MuseScore {
 
     onRun: {
         var history = new H.History(settings, onInfo, onError, 'go-back');
-        history.setReadonly();
         history.goBack();
         history.printLast();
     }
