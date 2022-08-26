@@ -35,16 +35,19 @@ MuseScore {
         if (!history) {
             init();
         }
+        var log = false;
         if (!curScore.is(prevScore)) {
             prevScore = curScore;
             history.changeScore(curScore && curScore.scoreName);
-            history.logPosition(true);
-            history.save();
+            log = true;
         } else if (state.selectionChanged) {
+            log = true;
+        }
+        if (log) {
             history.logPosition(true);
             history.save();
+            history.printLast(5);
         }
-        history.printLast(5);
     }
 
     function init()
@@ -87,8 +90,8 @@ MuseScore {
                 text: qsTr("←")
                 onClicked: {
                     history.goBack();
-                    history.printLast(5);
                     history.save();
+                    history.printLast(5);
                 }
             }
 
@@ -97,8 +100,8 @@ MuseScore {
                 text: qsTr("→")
                 onClicked: {
                     history.goForward();
-                    history.printLast(5);
                     history.save();
+                    history.printLast(5);
                 }
             }
         }
