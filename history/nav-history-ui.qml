@@ -37,8 +37,7 @@ MuseScore {
         }
         var log = false;
         if (!curScore.is(prevScore)) {
-            prevScore = curScore;
-            history.changeScore(curScore && curScore.scoreName);
+            changeScore();
             log = true;
         } else if (state.selectionChanged) {
             log = true;
@@ -56,6 +55,12 @@ MuseScore {
         // history.clear(); // Clear history when beginning a new session.
         history.logPosition();
         history.save();
+    }
+
+    function changeScore()
+    {
+        prevScore = curScore;
+        history.changeScore(curScore && curScore.scoreName);
     }
 
     function onInfo(msg)
@@ -89,6 +94,9 @@ MuseScore {
                 Layout.fillWidth: true
                 text: qsTr("←")
                 onClicked: {
+                    if (!curScore.is(prevScore)) {
+                        changeScore();
+                    }
                     history.goBack();
                     history.save();
                     history.printLast(5);
@@ -99,6 +107,9 @@ MuseScore {
                 Layout.fillWidth: true
                 text: qsTr("→")
                 onClicked: {
+                    if (!curScore.is(prevScore)) {
+                        changeScore();
+                    }
                     history.goForward();
                     history.save();
                     history.printLast(5);
