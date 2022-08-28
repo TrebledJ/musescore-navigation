@@ -34,9 +34,7 @@ A couple modules are provided with this package. Generally speaking, there are t
 * **Action Plugins**. These are run once and finish almost immediately. No UI. It's a good idea to bind shortcuts for these.
 * **UI Plugins**. These are dialog/dock plugins which are kept alive to play with.
 
-You can enable and disable whatever you like. There are no limitations.
-
-Well... except for the history module. Read more about it's usage below.
+You can enable and disable whatever you like. There are no limitations. Well... except for the history module. Read more about it's usage below.
 
 ### Bookmarks
 Marks down a section, saving it so that you can easily return to it later without the pain of scrolling.
