@@ -6,7 +6,7 @@
 
 
 BUILD_DIR := build
-ZIP_NAME := v3.0.0
+ZIP_NAME := musescore-navigation-v3.0.0
 
 BOOKMARK_PATH := bookmarks
 BOOKMARK_FILES := bookmarks.js 
